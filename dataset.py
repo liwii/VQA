@@ -1,0 +1,44 @@
+import numpy as np
+import torch
+from torch.utils.data import Dataset
+
+ANSWER_WORDS = 500
+QUESTION_WORDS = 15552
+
+class VQA(Dataset):
+    def __init__(self, questions, answers_dict, images, words_index, answer_options):
+        self.questions = questions
+        self.images = images
+        self.answers_dict = answers_dict
+        self.words_index = words_index
+        self.answer_options = answer_options
+
+    def __len__(self):
+        return len(self.questions)
+
+    def __getitem__(self, idx):
+        if type(idx) == torch.Tensor:
+            idx = idx.item()
+        q = self.questions[idx]
+        qid = q["question_id"]
+        iid = q["image_id"]
+        words = [w.translate({ord(i): None for i in "?!.:;,"}) for w in q["question"].split(' ')]
+        idxs_tbl = np.zeros((len(words), QUESTION_WORDS))
+        for i, w in enumerate(words):
+            if w in self.words_index:
+                idxs_tbl[i][self.words_index[w]] = 1
+            else:
+                idxs_tbl[i] += np.ones(len(words)) / QUESTION_WORDS
+        widxs = [self.words_index[w] for w in words]
+        image = self.images[iid]
+        answers = self.answers_dict[str(qid)]
+        ans_len = len(answers)
+        answers_np = np.zeros(ANSWER_WORDS)
+        for answer in answers:
+            answer_key = answer["answer"]
+            if answer_key in self.answer_options:
+                answers_np[self.answer_options[answer_key]] += 1 / ans_len
+            else:
+                answers_np += np.ones(ANSWER_WORDS) / ANSWER_WORDS / ans_len
+        return qid, torch.FloatTensor(image), torch.FloatTensor(idxs_tbl), torch.FloatTensor(answers_np)
+
