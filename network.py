@@ -24,3 +24,11 @@ class VQANN(nn.Module):
         im_out = F.relu(self.fcim(image))
         out = nn.Softmax(dim=1)(self.fclast(lstm_out * im_out))
         return out
+
+class MultiClassCrossEntropyLoss(nn.Module):
+
+    def __init__(self):
+        super(MultiClassCrossEntropyLoss, self).__init__()
+
+    def forward(self, output, target):
+        return - torch.sum(target * torch.log(output))

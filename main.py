@@ -1,5 +1,5 @@
 from dataset import VQA, ANSWER_WORDS, QUESTION_WORDS
-from network import VQANN
+from network import VQANN, MultiClassCrossEntropyLoss
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
@@ -48,12 +48,12 @@ def main(epochs, batch_size, output_file):
         print("Loaded questions")
 
     vqann = VQANN(QUESTION_WORDS, IMAGE_FEATURES, ANSWER_WORDS)
-    criterion = nn.MSELoss()
+    criterion = MultiClassCrossEntropyLoss()
     dataset = VQA(questions, answers_dict, images, words_index, answer_options)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     vqann = vqann.to(device)
-    optimizer = optim.SGD(vqann.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(vqann.parameters(), lr=1, momentum=0.9)
 
     since = time.time()
 
@@ -79,14 +79,13 @@ def main(epochs, batch_size, output_file):
             image = image.to(device)
             words = words.to(device)
             answers = answers.to(device)
-            optimizer.zero_grad()
 
-            with torch.set_grad_enabled(True):
-                out = vqann(words, image)
-                loss = criterion(out, answers)
-                # reg_loss = torch.norm(model.fc.weight)
-                loss.backward()
-                optimizer.step()
+            out = vqann(words, image)
+            loss = criterion(out, answers)
+            # reg_loss = torch.norm(model.fc.weight)
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
 
             batch_loss = loss.item()
