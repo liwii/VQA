@@ -71,6 +71,7 @@ def main():
             sys.stdout.write("\r{}/{}".format(done, dataset_len))
             image = image.to(device)
             words = words.to(device)
+            answers = answers.to(device)
             optimizer.zero_grad()
 
             with torch.set_grad_enabled(True):
@@ -82,7 +83,7 @@ def main():
 
 
             running_loss += loss.item()
-            running_corrects += answer_acc(out.cpu(), answers)
+            running_corrects += answer_acc(out.cpu(), answers.cpu())
             done += 1
 
         epoch_loss = running_loss / dataset_len
