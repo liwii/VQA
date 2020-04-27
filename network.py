@@ -21,7 +21,7 @@ class VQANN(nn.Module):
         im_lstm = lstm_out * im_out
         im_lstm = F.relu(self.fc1(im_lstm))
         im_lstm = F.relu(self.fc2(im_lstm))
-        out = nn.Softmax(dim=1)(self.fc3(im_lstm))
+        out = self.fc3(im_lstm)
         return out
 
 class MultiClassCrossEntropyLoss(nn.Module):
