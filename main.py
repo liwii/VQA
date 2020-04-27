@@ -53,7 +53,7 @@ def main(epochs, batch_size, output_file):
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     vqann = vqann.to(device)
-    optimizer = optim.SGD(vqann.parameters(), lr=1, momentum=0.9)
+    optimizer = optim.SGD(vqann.parameters(), lr=0.001, momentum=0.9)
 
     since = time.time()
 
