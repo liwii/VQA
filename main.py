@@ -1,4 +1,4 @@
-from dataset import VQA, ANSWER_WORDS, QUESTION_WORDS
+from dataset import VQA, ANSWER_WORDS
 from network import VQANN, MultiClassCrossEntropyLoss
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
@@ -31,9 +31,9 @@ def main(epochs, batch_size, output_file):
         images = pickle.load(f)
         print("Loaded train.pickle")
 
-    with open("words_index.json", "r") as f:
-        words_index = json.load(f)
-        print("Loaded words_index.json")
+    with open("glove_in_question.pickle", "rb") as f:
+        gloves = pickle.load(f)
+        print("Loaded gloves")
 
     with open("answer_options500.json", "r") as f:
         answer_options = json.load(f)
@@ -47,13 +47,15 @@ def main(epochs, batch_size, output_file):
         questions = json.load(f)["questions"]
         print("Loaded questions")
 
-    vqann = VQANN(QUESTION_WORDS, IMAGE_FEATURES, ANSWER_WORDS)
+    vqann = VQANN(IMAGE_FEATURES, ANSWER_WORDS)
     criterion = MultiClassCrossEntropyLoss()
-    dataset = VQA(questions, answers_dict, images, words_index, answer_options)
+    dataset = VQA(questions, answers_dict, images, gloves, answer_options)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
     vqann = vqann.to(device)
-    optimizer = optim.SGD(vqann.parameters(), lr=0.001, momentum=0.9)
+    optimizer = optim.SGD(vqann.parameters(), lr=0.01, momentum=0.9)
 
     since = time.time()
 
