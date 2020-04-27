@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 
 ANSWER_WORDS = 500
 QUESTION_WORDS = 15552
+QUESTION_MAX_LENGTH = 26
 
 class VQA(Dataset):
     def __init__(self, questions, answers_dict, images, words_index, answer_options):
@@ -23,13 +24,12 @@ class VQA(Dataset):
         qid = q["question_id"]
         iid = q["image_id"]
         words = [w.translate({ord(i): None for i in "?!.:;,"}) for w in q["question"].split(' ')]
-        idxs_tbl = np.zeros((len(words), QUESTION_WORDS))
-        for i, w in enumerate(words):
-            if w in self.words_index:
-                idxs_tbl[i][self.words_index[w]] = 1
+        idxs_tbl = np.zeros((QUESTION_MAX_LENGTH, QUESTION_WORDS))
+        for i in range(QUESTION_MAX_LENGTH):
+            if i < len(words) and words[i] in self.words_index:
+                idxs_tbl[i][self.words_index[words[i]]] = 1
             else:
-                idxs_tbl[i] += np.ones(len(words)) / QUESTION_WORDS
-        widxs = [self.words_index[w] for w in words]
+                idxs_tbl[i] += np.ones(QUESTION_WORDS) / QUESTION_WORDS
         image = self.images[iid]
         answers = self.answers_dict[str(qid)]
         ans_len = len(answers)

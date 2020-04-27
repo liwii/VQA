@@ -1,5 +1,6 @@
 from dataset import VQA, ANSWER_WORDS, QUESTION_WORDS
 from network import VQANN
+from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -19,8 +20,13 @@ def answer_acc(prediction, answers):
     n_of_answers = answers[pred_max_idx].item() * 10
     return min(1, n_of_answers / 3)
 
-def main():
-    num_epochs = 3
+def answer_acc_batch(predictions, answerss):
+    acc = 0
+    for prediction, answers in zip(predictions, answerss):
+        acc += answer_acc(prediction, answers)
+    return acc
+
+def main(epochs, batch_size, output_file):
     with open("train.pickle", "rb") as f:
         images = pickle.load(f)
         print("Loaded train.pickle")
@@ -44,6 +50,7 @@ def main():
     vqann = VQANN(QUESTION_WORDS, IMAGE_FEATURES, ANSWER_WORDS)
     criterion = nn.MSELoss()
     dataset = VQA(questions, answers_dict, images, words_index, answer_options)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     optimizer = optim.SGD(vqann.parameters(), lr=0.001, momentum=0.9)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     vqann = vqann.to(device)
@@ -56,8 +63,8 @@ def main():
     best_model_wts = copy.deepcopy(vqann.state_dict())
     best_acc = 0.0
 
-    for epoch in range(num_epochs):
-        print('Epoch {}/{}'.format(epoch + 1, num_epochs))
+    for epoch in range(epochs):
+        print('Epoch {}/{}'.format(epoch + 1, epochs))
         print('-' * 10)
 
         vqann.train()
@@ -67,8 +74,9 @@ def main():
         dataset_len = len(dataset)
         done = 0
     
-        for _, image, words, answers in dataset:
+        for _, image, words, answers in dataloader:
             sys.stdout.write("\r{}/{}".format(done, dataset_len))
+            this_batch_size = len(image)
             image = image.to(device)
             words = words.to(device)
             answers = answers.to(device)
@@ -82,12 +90,12 @@ def main():
                 optimizer.step()
 
 
-            running_loss += loss.item()
-            running_corrects += answer_acc(out.cpu(), answers.cpu())
-            done += 1
+            running_loss += loss.item() * this_batch_size
+            running_corrects += answer_acc_batch(out.cpu(), answers.cpu())
+            done += this_batch_size
 
         epoch_loss = running_loss / dataset_len
-        epoch_acc = running_corrects.double() / dataset_len
+        epoch_acc = running_corrects / dataset_len
 
         print('\n Loss: {:.4f} Acc: {:.4f}'.format(epoch_loss, epoch_acc))
         
@@ -105,27 +113,26 @@ def main():
     print('Best Acc: {:4f}'.format(best_acc))
 
     vqann.load_state_dict(best_model_wts)
-    torch.save(vqann.state_dict(), 'vqann.pth')
+    torch.save(vqann.state_dict(), output_file)
 
     plt.title("Training Accuracy")
     plt.xlabel("Training Epochs")
     plt.ylabel("Training Accuracy")
 
-    plt.plot(range(1, num_epochs + 1), acc_history)
-    plt.xticks(np.arange(1, num_epochs+1, 1.0))
+    plt.plot(range(1, epochs + 1), acc_history)
+    plt.xticks(np.arange(1, epochs+1, 1.0))
     plt.savefig('vqann_loss.png')
 
     plt.title("Training Loss")
     plt.xlabel("Training Epochs")
     plt.ylabel("Training Loss")
 
-    plt.plot(range(1, num_epochs + 1), loss_history)
-    plt.xticks(np.arange(1, num_epochs+1, 1.0))
+    plt.plot(range(1, epochs + 1), loss_history)
+    plt.xticks(np.arange(1, epochs+1, 1.0))
     plt.savefig('vqann_loss.png')
 
-#qid, image, words, answers = dataset[1]
-#out = vqann(words, image)
-#breakpoint()
-
 if __name__ == '__main__':
-    main()
+    epochs = int(sys.argv[1])
+    batch_size = int(sys.argv[2])
+    output_file = sys.argv[3]
+    main(epochs, batch_size, output_file)

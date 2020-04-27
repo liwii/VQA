@@ -16,11 +16,11 @@ class VQANN(nn.Module):
 
     def forward(self, words, image):
         x = F.relu(self.fc1(words))
-        x_ = x.view(len(x), 1, EMBEDDING_DIM)
-        out, hidden1 = self.lstm1(x_)
+        x = x.transpose(0, 1)
+        out, hidden1 = self.lstm1(x)
         _ , hidden2 = self.lstm2(out, hidden1)
-        lstm_out = torch.cat((*hidden1, *hidden2)).view(-1)
+        lstm_out = torch.cat((*hidden1, *hidden2), dim=2).view(-1, LSTM_OUT_DIM * 4)
         lstm_out = F.relu(self.fc2(lstm_out))
         im_out = F.relu(self.fcim(image))
-        out = nn.Softmax()(self.fclast(lstm_out * im_out))
+        out = nn.Softmax(dim=1)(self.fclast(lstm_out * im_out))
         return out
