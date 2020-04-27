@@ -7,21 +7,21 @@ LSTM_OUT_DIM = 512
 class VQANN(nn.Module):
     def __init__(self, image_dim, out_dim):
         super(VQANN, self).__init__()
-        self.lstm1 = nn.LSTM(EMBEDDING_DIM, LSTM_OUT_DIM)
-        self.lstm2 = nn.LSTM(LSTM_OUT_DIM, LSTM_OUT_DIM)
-        self.fcw = nn.Linear(LSTM_OUT_DIM * 4, LSTM_OUT_DIM * 2)
+        self.lstm = nn.LSTM(EMBEDDING_DIM, LSTM_OUT_DIM)
         self.fcim = nn.Linear(image_dim, LSTM_OUT_DIM * 2)
-        self.fclast = nn.Linear(LSTM_OUT_DIM * 2, out_dim)
+        self.fc1 = nn.Linear(LSTM_OUT_DIM * 2, out_dim)
+        self.fc2 = nn.Linear(out_dim, out_dim)
+        self.fc3 = nn.Linear(out_dim, out_dim)
 
     def forward(self, words, image):
         x = words.transpose(0, 1)
-        out, hidden1 = self.lstm1(x)
-        _ , hidden2 = self.lstm2(out, hidden1)
-        lstm_out = torch.cat((*hidden1, *hidden2), dim=2).view(-1, LSTM_OUT_DIM * 4)
-        lstm_out = F.relu(self.fcw(lstm_out))
+        _, hidden = self.lstm(x)
+        lstm_out = torch.cat(hidden, dim=2).view(-1, LSTM_OUT_DIM * 2)
         im_out = F.relu(self.fcim(image))
         im_lstm = lstm_out * im_out
-        out = nn.Softmax(dim=1)(self.fclast(im_lstm))
+        im_lstm = F.relu(self.fc1(im_lstm))
+        im_lstm = F.relu(self.fc2(im_lstm))
+        out = nn.Softmax(dim=1)(self.fc3(im_lstm))
         return out
 
 class MultiClassCrossEntropyLoss(nn.Module):
