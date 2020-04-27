@@ -51,9 +51,9 @@ def main(epochs, batch_size, output_file):
     criterion = nn.MSELoss()
     dataset = VQA(questions, answers_dict, images, words_index, answer_options)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
-    optimizer = optim.SGD(vqann.parameters(), lr=0.001, momentum=0.9)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     vqann = vqann.to(device)
+    optimizer = optim.SGD(vqann.parameters(), lr=0.001, momentum=0.9)
 
     since = time.time()
 
@@ -75,7 +75,6 @@ def main(epochs, batch_size, output_file):
         done = 0
     
         for _, image, words, answers in dataloader:
-            sys.stdout.write("\r{}/{}".format(done, dataset_len))
             this_batch_size = len(image)
             image = image.to(device)
             words = words.to(device)
@@ -90,14 +89,16 @@ def main(epochs, batch_size, output_file):
                 optimizer.step()
 
 
-            running_loss += loss.item() * this_batch_size
+            batch_loss = loss.item()
+            running_loss += batch_loss() * this_batch_size
             running_corrects += answer_acc_batch(out.cpu(), answers.cpu())
             done += this_batch_size
+            sys.stdout.write("\r{}/{}, Loss: {}".format(done, dataset_len, batch_loss))
 
         epoch_loss = running_loss / dataset_len
         epoch_acc = running_corrects / dataset_len
 
-        print('\n Loss: {:.4f} Acc: {:.4f}'.format(epoch_loss, epoch_acc))
+        print('\n Loss: {:.6f} Acc: {:.4f}'.format(epoch_loss, epoch_acc))
         
         if epoch_acc > best_acc:
             best_acc = epoch_acc
