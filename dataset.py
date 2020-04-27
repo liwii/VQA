@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from torch.utils.data import Dataset
-from statistics import mode
+import collections
 
 ANSWER_WORDS = 500
 QUESTION_MAX_LENGTH = 26
@@ -33,7 +33,7 @@ class VQA(Dataset):
         word_vectors = np.asarray(word_vectors)
         image = self.images[iid]
         answers = [a["answer"] for a in self.answers_dict[str(qid)]]
-        answer = mode(answers)
+        answer = collections.Counter(answers).most_common()[0][0]
         if answer in self.answer_options:
             answer_num = self.answer_options[answer]
         else:
