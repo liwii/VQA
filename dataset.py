@@ -9,20 +9,17 @@ QUESTION_MAX_LENGTH = 26
 class VQA(Dataset):
     def __init__(self, questions, answers_dict, images, gloves, answer_options):
         self.questions = questions
-        breakpoint()
         self.images = images
         self.answers_dict = answers_dict
         self.gloves = gloves
         self.answer_options = answer_options
 
     def __len__(self):
-        return 6
-        #return len(self.questions)
+        return len(self.questions)
 
     def __getitem__(self, idx):
         if type(idx) == torch.Tensor:
             idx = idx.item()
-        idx += 1
         q = self.questions[idx]
         qid = q["question_id"]
         iid = q["image_id"]
