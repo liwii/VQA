@@ -90,7 +90,7 @@ def main(epochs, batch_size, output_file):
 
 
             batch_loss = loss.item()
-            running_loss += batch_loss() * this_batch_size
+            running_loss += batch_loss * this_batch_size
             running_corrects += answer_acc_batch(out.cpu(), answers.cpu())
             done += this_batch_size
             sys.stdout.write("\r{}/{}, Loss: {}".format(done, dataset_len, batch_loss))
