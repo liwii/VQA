@@ -23,18 +23,23 @@ def main():
     num_epochs = 3
     with open("train.pickle", "rb") as f:
         images = pickle.load(f)
+        print("Loaded train.pickle")
 
     with open("words_index.json", "r") as f:
         words_index = json.load(f)
+        print("Loaded words_index.json")
 
     with open("answer_options500.json", "r") as f:
         answer_options = json.load(f)
+        print("Loaded answer_options500.json")
 
     with open("answers_from_question.json", "r") as f:
         answers_dict = json.load(f)
+        print("Loaded answers_from_question.json")
 
     with open("v2_OpenEnded_mscoco_train2014_questions.json", "r") as f:
         questions = json.load(f)["questions"]
+        print("Loaded questions")
 
     vqann = VQANN(QUESTION_WORDS, IMAGE_FEATURES, ANSWER_WORDS)
     criterion = nn.MSELoss()
