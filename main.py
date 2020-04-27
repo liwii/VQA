@@ -33,6 +33,7 @@ def main(epochs, batch_size, output_file):
 
     with open("glove_in_question.pickle", "rb") as f:
         gloves = pickle.load(f)
+        breakpoint()
         print("Loaded gloves")
 
     with open("answer_options500.json", "r") as f:

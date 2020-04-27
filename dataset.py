@@ -26,7 +26,7 @@ class VQA(Dataset):
         word_vectors = []
         for i in range(QUESTION_MAX_LENGTH):
             if i >= len(words) or words[i] not in self.gloves:
-                word_vectors.append(np.ones(300) / 300)
+                word_vectors.append(np.zeros(300))
             else:
                 word_vectors.append(self.gloves[words[i]])
         word_vectors = np.asarray(word_vectors)
