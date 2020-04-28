@@ -46,7 +46,8 @@ def main(input_file, batch_size, output_file):
     answer_words = len(answer_options)
     vqann = VQANN(IMAGE_FEATURES, answer_words + 1)
     answer_words_list = [None] * (answer_words + 1)
-    for k, v in answer_options:
+    for k in answer_options:
+        v = answer_options[k]
         answer_words_list[v] = k
     answer_words_list[answer_words] = "yes"
     dataset = VQA(questions, answers_dict, images, gloves, answer_options)
