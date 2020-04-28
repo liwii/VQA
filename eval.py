@@ -76,7 +76,7 @@ def main(input_file, batch_size, output_file):
             _, indices = out.max(1)
             for qid, index in zip(qids, answer_words_list):
                 answers.append(
-                    { "question_id": qid.item(), "answer": answer_words_list[index.item()] }
+                    { "question_id": int(qid), "answer": answer_words_list[index.item()] }
                 )
         # reg_loss = torch.norm(model.fc.weight)
 
