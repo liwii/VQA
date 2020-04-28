@@ -74,7 +74,7 @@ def main(input_file, batch_size, output_file):
             out = vqann(words, image, word_lengths)
 
             _, indices = out.max(1)
-            for qid, index in zip(qids, answer_words_list):
+            for qid, index in zip(qids, indices):
                 answers.append(
                     { "question_id": int(qid), "answer": answer_words_list[index.item()] }
                 )
