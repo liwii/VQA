@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import Dataset
 import collections
 
-ANSWER_WORDS = 500
+ANSWER_WORDS = 1000
 QUESTION_MAX_LENGTH = 26
 
 class VQA(Dataset):

@@ -27,7 +27,7 @@ def main(epochs, batch_size, output_file):
         gloves = pickle.load(f)
         print("Loaded gloves")
 
-    with open("answer_options500.json", "r") as f:
+    with open("answer_options1000.json", "r") as f:
         answer_options = json.load(f)
         print("Loaded answer_options")
 
