@@ -11,7 +11,9 @@ class VQANN(nn.Module):
         self.fclstm = nn.Linear(LSTM_OUT_DIM * 4, LSTM_OUT_DIM * 2)
         self.fcim = nn.Linear(image_dim, LSTM_OUT_DIM * 2)
         self.fc1 = nn.Linear(LSTM_OUT_DIM * 2, out_dim)
+        self.drop1 = nn.Dropout(p=0.5)
         self.fc2 = nn.Linear(out_dim, out_dim)
+        self.drop2 = nn.Dropout(p=0.5)
         self.fc3 = nn.Linear(out_dim, out_dim)
 
     def forward(self, words, image, word_lengths):
@@ -21,8 +23,8 @@ class VQANN(nn.Module):
         lstm_out = self.fclstm(lstm_out)
         im_out = F.relu(self.fcim(image))
         im_lstm = lstm_out + im_out
-        out = F.relu(self.fc1(im_lstm))
-        out = F.relu(self.fc2(out))
+        out = self.drop1(F.relu(self.fc1(im_lstm)))
+        out = self.drop2(F.relu(self.fc2(out)))
         return self.fc3(out)
 
 class MultiClassCrossEntropyLoss(nn.Module):
