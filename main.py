@@ -87,7 +87,7 @@ def main(epochs, batch_size, output_file):
             running_loss += batch_loss * this_batch_size
             running_corrects += answer_acc(out, answers)
             done += this_batch_size
-            sys.stdout.write("\r{}/{}, Loss: {}, Acc: {}".format(done, dataset_len, batch_loss, running_corrects))
+            sys.stdout.write("\r{}/{}, Loss: {:3f}, Acc: {:3f}".format(done, dataset_len, batch_loss, running_corrects / done))
 
         epoch_loss = running_loss / dataset_len
         epoch_acc = running_corrects / dataset_len
