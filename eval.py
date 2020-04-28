@@ -17,7 +17,7 @@ IMAGE_FEATURES = 2048
 def main(input_file, batch_size, output_file):
     image_pickle_f = "val.pickle"
     word_embeddings_f = "glove_in_question.pickle"
-    answer_options_f = "answer_options500.json"
+    answer_options_f = "answer_options1000.json"
     answers_dict_f = "answers_from_question_val.json"
     questions_f = "v2_OpenEnded_mscoco_val2014_questions.json"
     state_dict_f = "vqann.pth"
