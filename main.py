@@ -47,7 +47,7 @@ def main(epochs, batch_size, output_file):
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
     vqann = vqann.to(device)
-    optimizer = optim.Adam(vqann.parameters())
+    optimizer = optim.SGD(vqann.parameters(), lr=0.01, momentum=0.9)
 
     since = time.time()
 
