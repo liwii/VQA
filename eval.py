@@ -84,7 +84,7 @@ def main(input_file, batch_size, output_file):
         done += this_batch_size
         sys.stdout.write("\r{}/{}".format(done, dataset_len))
 
-    with json.open(output_file, "w") as f:
+    with open(output_file, "w") as f:
         json.dump(answers, f)
 
 if __name__ == '__main__':
