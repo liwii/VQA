@@ -68,13 +68,14 @@ def main(epochs, batch_size, output_file):
         dataset_len = len(dataset)
         done = 0
     
-        for _, image, words, answers in dataloader:
+        for _, image, words, answers, word_lengths in dataloader:
             this_batch_size = len(image)
             image = image.to(device)
             words = words.to(device)
             answers = answers.to(device)
+            word_lengths = word_lengths.to(device)
 
-            out = vqann(words, image)
+            out = vqann(words, image, word_lengths)
             loss = criterion(out, answers)
             # reg_loss = torch.norm(model.fc.weight)
             optimizer.zero_grad()

@@ -25,6 +25,7 @@ class VQA(Dataset):
         iid = q["image_id"]
         words = [w.translate({ord(i): None for i in "?!.:;,\"()#$/'`"}).lower() for w in q["question"].split(' ')]
         word_vectors = []
+        word_length = len(words)
         for i in range(QUESTION_MAX_LENGTH):
             if i >= len(words) or words[i] not in self.gloves:
                 word_vectors.append(np.zeros(300))
@@ -39,5 +40,5 @@ class VQA(Dataset):
         else:
             answer_num = ANSWER_WORDS
 
-        return qid, torch.FloatTensor(image), torch.FloatTensor(word_vectors), answer_num
+        return qid, torch.FloatTensor(image), torch.FloatTensor(word_vectors), answer_num, word_length
 
