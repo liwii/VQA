@@ -33,15 +33,12 @@ class VQA(Dataset):
                 word_vectors.append(self.gloves[words[i]])
         word_vectors = np.asarray(word_vectors)
         image = self.images[iid]
-        answers = self.answers_dict[str(qid)]
-        ans_len = len(answers)
-        answers_np = np.zeros(ANSWER_WORDS + 1)
-        for answer in answers:
-            answer_key = answer["answer"]
-            if answer_key in self.answer_options:
-                answers_np[self.answer_options[answer_key]] += 1 / ans_len
-            else:
-                answers_np[ANSWER_WORDS] += 1 / ans_len
+        answers = [a["answer"] for a in self.answers_dict[str(qid)]]
+        answer = collections.Counter(answers).most_common()[0][0]
+        if answer in self.answer_options:
+            answer_num = self.answer_options[answer]
+        else:
+            answer_num = ANSWER_WORDS
 
-        return qid, torch.FloatTensor(image), torch.FloatTensor(word_vectors), torch.FloatTensor(answers_np), word_length
+        return qid, torch.FloatTensor(image), torch.FloatTensor(word_vectors), answer_num, word_length
 
