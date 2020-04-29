@@ -10,7 +10,7 @@ class VQANN(nn.Module):
         self.lstm = nn.LSTM(EMBEDDING_DIM, LSTM_OUT_DIM, 3)
         self.fclstm = nn.Linear(LSTM_OUT_DIM * 6, LSTM_OUT_DIM * 2)
         self.fcim = nn.Linear(image_dim, LSTM_OUT_DIM * 2)
-        self.fc1 = nn.Linear(LSTM_OUT_DIM * 2, out_dim)
+        self.fc1 = nn.Linear(LSTM_OUT_DIM * 4, out_dim)
         self.fc2 = nn.Linear(out_dim, out_dim)
         self.fc3 = nn.Linear(out_dim, out_dim)
 
@@ -20,7 +20,7 @@ class VQANN(nn.Module):
         lstm_out = torch.cat((hidden[0][0], hidden[0][1], hidden[0][2], hidden[1][0], hidden[1][1], hidden[1][2]), 1)
         lstm_out = self.fclstm(lstm_out)
         im_out = F.relu(self.fcim(image))
-        im_lstm = lstm_out + im_out
+        im_lstm = torch.cat((im_out, lstm_out), 1)
         out = F.relu(self.fc1(im_lstm))
         out = F.relu(self.fc2(out))
         return self.fc3(out)
