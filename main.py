@@ -1,5 +1,5 @@
 from dataset import VQA, ANSWER_WORDS
-from network import VQANN, MultiClassCrossEntropyLoss
+from network import VQANN
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 import numpy as np
@@ -14,17 +14,9 @@ import sys
 
 IMAGE_FEATURES = 2048
 
-def answer_acc(prediction, answers):
-    _, pred_max_idx = prediction.max(0)
-    pred_max_idx = pred_max_idx.item()
-    n_of_answers = answers[pred_max_idx].item() * 10
-    return min(1, n_of_answers / 3)
-
-def answer_acc_batch(predictions, answerss):
-    acc = 0
-    for prediction, answers in zip(predictions, answerss):
-        acc += answer_acc(prediction, answers)
-    return acc
+def answer_acc(predictions, answers):
+    _, pred_max_idx = predictions.max(1)
+    return (answers == pred_max_idx).sum().item()
 
 def main(epochs, batch_size, output_file):
     with open("train.pickle", "rb") as f:
@@ -48,7 +40,7 @@ def main(epochs, batch_size, output_file):
         print("Loaded questions")
 
     vqann = VQANN(IMAGE_FEATURES, ANSWER_WORDS + 1)
-    criterion = MultiClassCrossEntropyLoss()
+    criterion = nn.CrossEntropyLoss()
     dataset = VQA(questions, answers_dict, images, gloves, answer_options)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -93,8 +85,7 @@ def main(epochs, batch_size, output_file):
 
             batch_loss = loss.item()
             running_loss += batch_loss * this_batch_size
-            with torch.no_grad():
-                running_corrects += answer_acc_batch(out.cpu(), answers.cpu())
+            running_corrects += answer_acc(out, answers)
             done += this_batch_size
             sys.stdout.write("\r{}/{}, Loss: {:3f}, Acc: {:3f}".format(done, dataset_len, batch_loss, running_corrects / done))
 
