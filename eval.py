@@ -45,11 +45,10 @@ def main(input_file, batch_size, output_file):
     
     answer_words = len(answer_options)
     vqann = VQANN(IMAGE_FEATURES, answer_words + 1)
-    answer_words_list = [None] * (answer_words + 1)
+    answer_words_list = [None] * (answer_words)
     for k in answer_options:
         v = answer_options[k]
         answer_words_list[v] = k
-    answer_words_list[answer_words] = "yes"
     dataset = VQA(questions, answers_dict, images, gloves, answer_options)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -73,7 +72,7 @@ def main(input_file, batch_size, output_file):
 
             out = vqann(words, image, word_lengths)
 
-            _, indices = out.max(1)
+            _, indices = out[:, :answer_words].max(1)
             for qid, index in zip(qids, indices):
                 answers.append(
                     { "question_id": int(qid), "answer": answer_words_list[index.item()] }
